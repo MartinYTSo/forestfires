@@ -1,0 +1,5 @@
+outs:
+- md5: 6d5b03dd8dfdfa7953c6202dbeb143a6
+  size: 608686998
+  hash: md5
+  path: housepricesLA.geojson
