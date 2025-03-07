@@ -7,7 +7,7 @@ app = FastAPI()
 
 fire_hazard_path =  "data/Fire_Hazard_Severity_Zones.geojson"
 fire_hazard_zones = gpd.read_file(fire_hazard_path)
-m = folium.Map(location=[34.05, -118.25], zoom_start=9, tiles="cartodbpositron")
+m = folium.Map(location=[34.05, -118.25], zoom_start=9)
 
 
 
@@ -36,7 +36,7 @@ def get_map():
     tiles="https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}",
     attr= "UGS National Map",
     name= "USGS Elevation (Contours)",
-    overlay=True).add_to(m)
+    overlay=False).add_to(m)
     folium.LayerControl().add_to(m)
 
     return HTMLResponse(m._repr_html_())
