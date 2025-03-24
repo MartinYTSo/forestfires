@@ -62,7 +62,7 @@ row3_row1_col1, row3_row1_col2 = st.columns([5, 1],border=True)
 
 
 # Fetch the folium map from the FastAPI server
-map_url = "https://forestfires-gy35.onrender.com"
+map_url = "http://localhost:8000/"
 response = requests.get(map_url)
 
 ##########################################

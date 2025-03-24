@@ -4,7 +4,6 @@ import geopandas as gpd
 import folium
 
 app = FastAPI()
-
 fire_hazard_path =  "data/Fire_Hazard_Severity_Zones.geojson"
 fire_hazard_zones = gpd.read_file(fire_hazard_path)
 m = folium.Map(location=[34.05, -118.25], zoom_start=9)
