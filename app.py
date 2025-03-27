@@ -4,7 +4,8 @@ import numpy as np
 import folium 
 from streamlit_folium import st_folium
 import pandas as pd
-
+import requests
+from predictor import PropertyPricePredictor
 st.set_page_config(layout="wide",
                    initial_sidebar_state = "expanded")
 
@@ -16,20 +17,21 @@ def read_data():
     zip_codes_only=data['Zip Code'].to_list()
     return zip_codes_only 
 
+@st.cache_resource
+def load_predictor():
+    return PropertyPricePredictor(
+        model_path="lgbm_model_full.joblib",
+        reference_data_path="data/LA Prices 2019-2023 and Census.csv"
+    )
 
-def map_property_type(df):
-    mapping = {
-        "Single Family Residential": 3,
-        "Low Density Residential": 2,
-        "Condominium": 1
-    }
-    df["Property TypeTest"] = df["Property Type"].map(mapping)
-    return df
 
 ##########################################
 
 
 LAData =read_data()
+
+predictor = load_predictor()
+
 
 
 
@@ -87,51 +89,44 @@ with row1:
         
     with row1_col4:
         row1_col4.write("This is Column 4 inside the container")
-        BuildingAgeParameter= st.slider("Age of Building",1,1000,2)
+        BuildingAgeParameter= st.slider("Building Age",1,100,2)
         ImprovementValueParameter= st.slider("Improvement Value",1,1000,2)
-        if st.button("Save to DataFrame"): ##saves input data 
+        
+        if st.button("Analyze"): ##saves input data 
             
             data = {
             "Number of Buildings": [BuildingsParameter],
             "Bathrooms": [BathroomsParameter],
             "Square Footage": [SquareFootage],
-            "No. of Units": [NumberOfUnitsParameter],
+            "Number of Units": [NumberOfUnitsParameter],
             "Property Type": [PropertyUseTypeParameter],
             "Median Income": [MedianIncomeParameter],
             "Housing Cost (%)": [HousingCostPrameter],
-            "Age of Building": [BuildingAgeParameter],
+            "Building Age": [BuildingAgeParameter],
             "Improvement Value": [ImprovementValueParameter]}
+            response = requests.post("http://localhost:8000/submit_form/", json=data)
+            if response.status_code == 200:
+                st.success("Sent")
+
+                # Call the prediction API
             
-            df = pd.DataFrame(data)
-            if data:
-                
-                df = pd.DataFrame(data)
-                property_type_mapping = {
-                    "Single Family Residential": 3,
-                    "Low Density Residential": 2,
-                    "Condominium": 1
-                }
-                df["Property Type"] = df["Property Type"].map(property_type_mapping)
-                
-st.write("Saved Data:")
-st.dataframe(df)
 
         
         
 
 
 
-# st.dataframe(LAData.head()) #debugging to load dataframe 
+pred_response = requests.get("http://localhost:8000/get_data")
+if pred_response.status_code == 200 and pred_response.json():
+    pred_response_data = pred_response.json()
+    result_df = pd.DataFrame([pred_response_data])
+    prediction_output = predictor.predict(pred_response_data)
+    st.write("### 🔍 Submitted Input Data")
+    st.dataframe(prediction_output)
+else:
+    st.warning("No data submitted yet or prediction server did not respond.")
 
-        
     
-
-        
-        
-        
-row3_row1_col1, row3_row1_col2 = st.columns([5, 1],border=True)
-        
-            
         
         
 
@@ -158,6 +153,7 @@ response = requests.get(map_url)
 
 ##########################################
 
+row3_row1_col1, row3_row1_col2 = st.columns([5, 1],border=True)
 
 with row3_row1_col1:
     st.components.v1.html(response.text, width=1680,height=1080)
