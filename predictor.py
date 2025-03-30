@@ -26,7 +26,7 @@ class PropertyPricePredictor:
             if isinstance(value, list) and len(value) == 1:
                 data[key] = value[0]
 
-        df = pd.DataFrame([data])
+        df = pd.DataFrame(data)
         df = self.map_property_type(df)
 
         sample = self.test_data[['Zip Code','Roll Year']]

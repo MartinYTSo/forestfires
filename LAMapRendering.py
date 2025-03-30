@@ -8,7 +8,7 @@ import numpy as np
 import io
 import base64
 import matplotlib.pyplot as plt
-
+import geopandas as gpd
 
 @st.cache_data
 def image_to_base64(image_path):
@@ -25,25 +25,13 @@ logo_html = f"""
         """
 
 
-@st.cache_data
-def build_geojson_with_predictions(geojson_path, zip_pred_dict):
-    with open(geojson_path, "r") as f:
-        geojson_data = json.load(f)
-
-    for feature in geojson_data["features"]:
-        zip_code = int(feature["properties"]["ZIPCODE"])
-        feature["properties"]["prediction"] = zip_pred_dict.get(zip_code, 0)
-
-    return geojson_data
-
-
 class LACountyMap:
-    def __init__(self, df: pd.DataFrame, elevdf:pd.DataFrame, geojson_path: str):
+    def __init__(self, df: pd.DataFrame, gdf: gpd.GeoDataFrame):
         # Convert to Dask DataFrame for faster parallel computation
         self.ddf = dd.from_pandas(df.copy(), npartitions=4)
-        self.elevation_data = dd.from_pandas(elevdf.copy(), npartitions=4)
-        self.geojson_path = geojson_path
-        self.geojson_data = None
+        # self.elevation_data = dd.from_pandas(elevdf.copy(), npartitions=4)
+        self.geojson_data = gdf.copy()
+        self.geodata_cleaned=None
         self.layer = None
         self.scatter_layer = None
         self.bitmap_layer=None
@@ -52,24 +40,27 @@ class LACountyMap:
 
         # Compute and convert Dask DataFrame to Pandas for mapping
         computed_df = self.ddf[['Zip Code', 'Predicted Price']].compute()
-        prediction_dict = dict(zip(
-            computed_df['Zip Code'].astype(int),
-            computed_df['Predicted Price']
-        ))
-        self.geojson_data = build_geojson_with_predictions(self.geojson_path, prediction_dict)
+        self.geojson_data['ZIPCODE']=self.geojson_data['ZIPCODE'].astype(int)
+        merged_gdf = self.geojson_data.merge(computed_df, how='left', left_on='ZIPCODE', right_on='Zip Code')
+        merged_gdf['Predicted Price']= merged_gdf['Predicted Price'].fillna(0)
+        merged_gdf.rename(columns={"Predicted Price":'prediction'},inplace=True)
+        self.geodata_cleaned= merged_gdf
+        return self.geodata_cleaned
+
 
 
             
 
 
     def generate_map(self, center=[34.05, -118.25], zoom=9, width=1000, height=1030):
-        if self.geojson_data is None:
+        if self.geodata_cleaned is None:
             raise ValueError("GeoJSON not loaded. Call load_and_prepare_data() first.")
+        geojson_data = json.loads(self.geodata_cleaned.to_json())
         
         
         self.layer = pdk.Layer(
             "GeoJsonLayer",
-            self.geojson_data,
+            geojson_data,
             pickable=True,
             auto_highlight=True,
             opacity=0.6,
@@ -81,7 +72,7 @@ class LACountyMap:
             get_line_color=[255, 255, 255],
             line_width_min_pixels=1
         )
-        show_elev_layer = st.checkbox("Show Elevation Layer", value=True)
+        show_elev_layer = st.checkbox("Show Elevation Layer", value=False)
         
         
         sample_data = pd.DataFrame({
@@ -135,7 +126,7 @@ class LACountyMap:
                         "borderRadius": "4px"
                     }
                 },
-            map_style='mapbox://styles/mapbox/streets-v11'	
+            map_style='mapbox://styles/mapbox/streets-v10'	
         )
 
         st.pydeck_chart(r, width=width, height=height)

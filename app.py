@@ -6,6 +6,9 @@ import requests
 from predictor import PropertyPricePredictor
 from LAMapRendering import LACountyMap
 import logging 
+import geopandas as gpd 
+import dask.dataframe as dd
+
 st.set_page_config(layout="wide",
                    initial_sidebar_state = "expanded")
 
@@ -17,6 +20,10 @@ def read_data():
     zip_codes_only=data['Zip Code'].to_list()
     return zip_codes_only 
 
+@st.cache_data #read data 
+def read_geojson_data():
+    geodata= gpd.read_file('data/LA_County_ZIP_Codes.geojson')
+    return geodata 
 
 @st.cache_resource
 def load_predictor():
@@ -27,19 +34,18 @@ def load_predictor():
 
 @st.cache_data
 def read_elevation_data():
-    elev_df= pd.read_csv("data/elevation_data_downsampled.csv")
+    elev_df= dd.read_csv("data/elevation_data_downsampled.csv")
     return elev_df
+
+
 
 ##########################################
 
 
 LAData =read_data()
-
 predictor = load_predictor()
-
 elev_data= read_elevation_data()
-
-
+geodata=read_geojson_data()
 
 st.title("CSE 6242 Predicting Real Estate Risks via Forest Fires")
 
@@ -105,24 +111,47 @@ with main_container:
             with st.spinner("Analyzing:"):
                 response = requests.post("http://localhost:8000/submit_form/", json=data)
                 if response.status_code == 200:
-                    st.success("Sent")
+                    pred_response = requests.get("http://localhost:8000/get_df_predictions")
+                    if pred_response.status_code==200:
+                        st.session_state.prediction_data= pd.DataFrame(pred_response.json())
+                    # st.session_state.prediction_data = pd.DataFrame([response.json()])
+                        st.success("Prediction complete!")
+                else:
 
+                    st.error("Prediction Failed")
+####delete soon
     with left_col:
         st.subheader("Wildfire Risk Map")
-        with st.spinner("Loading predictions and generating map..."):
-            pred_response = requests.get("http://localhost:8000/get_data")
-            if pred_response.status_code == 200 and pred_response.json():
-                pred_response_data = pred_response.json()
-                result_df = pd.DataFrame([pred_response_data])
-                prediction_output = predictor.predict(pred_response_data)
-                # st.write("### 🔍 Submitted Input Data")
-                # st.write(pd.DataFrame(prediction_output))
-            # else:
-                # st.warning("No data submitted yet or prediction server did not respond.")
+        if 'prediction_data' in st.session_state:
+            with st.spinner("Rendering map..."):
+                map_obj= LACountyMap(st.session_state.prediction_data,geodata)
+                map_obj.load_and_prepare_data()
+                map_obj.generate_map()
+            # deck_map =map_obj.generate_map()  
+            # st.pydeck_chart(deck_map) 
+
+############ delete soon
+
+
+############################## TO BE ADDED##################            
+    # with left_col:
+        
+    #     st.subheader("Wildfire Risk Map")
+    #     with st.spinner("Loading predictions and generating map..."):
+    #         map_response = requests.get("http://localhost:8000/get_map/")
+    #         if map_response.status_code == 200:
+    #             map_data = map_response.json()
                 
-            prediction_dataframe=pd.DataFrame(prediction_output) 
-            map_obj= LACountyMap(prediction_dataframe,elev_data,"data/LA_County_ZIP_Codes.geojson")
-            map_obj.load_and_prepare_data()
-            map_obj.generate_map()   
+    #             deck_json = map_data["deck_json"]
+    #             legend_base64 = map_data["legend_image"]
+
+    #             # Show the PyDeck chart
+    #             st.pydeck_chart(pdk.Deck(deck_json))
+
+    #             # Show the legend image
+    #             st.image(f"data:image/png;base64,{legend_base64}")
+    #         else:
+    #             st.error("Failed to load map")
+
 
 # row2= st.container(border=True
