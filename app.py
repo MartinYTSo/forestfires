@@ -25,6 +25,10 @@ def load_predictor():
         reference_data_path="data/LA Prices 2019-2023 and Census.csv"
     )
 
+@st.cache_data
+def read_elevation_data():
+    elev_df= pd.read_csv("data/elevation_data_downsampled.csv")
+    return elev_df
 
 ##########################################
 
@@ -33,6 +37,7 @@ LAData =read_data()
 
 predictor = load_predictor()
 
+elev_data= read_elevation_data()
 
 
 
@@ -116,9 +121,8 @@ with main_container:
                 # st.warning("No data submitted yet or prediction server did not respond.")
                 
             prediction_dataframe=pd.DataFrame(prediction_output) 
-            map_obj= LACountyMap(prediction_dataframe,"data/LA_County_ZIP_Codes.geojson")
+            map_obj= LACountyMap(prediction_dataframe,elev_data,"data/LA_County_ZIP_Codes.geojson")
             map_obj.load_and_prepare_data()
             map_obj.generate_map()   
-                    
 
 # row2= st.container(border=True
