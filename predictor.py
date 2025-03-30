@@ -9,7 +9,7 @@ class PropertyPricePredictor:
         self.model = joblib.load(model_path)
         self.test_data = pd.read_csv(reference_data_path)
 
-    def _map_property_type(self, df: pd.DataFrame, column_name="Property Type") -> pd.DataFrame:
+    def map_property_type(self, df: pd.DataFrame, column_name="Property Type") -> pd.DataFrame:
         mapping = {
             "Single Family Residential": 3,
             "Low Density Residential": 2,
@@ -27,7 +27,7 @@ class PropertyPricePredictor:
                 data[key] = value[0]
 
         df = pd.DataFrame([data])
-        df = self._map_property_type(df)
+        df = self.map_property_type(df)
 
         sample = self.test_data[['Zip Code','Roll Year']]
         sample_df = sample.groupby("Zip Code").mean().reset_index()
