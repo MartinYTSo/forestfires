@@ -52,11 +52,12 @@ class LACountyMap:
             
 
 
-    def generate_map(self, center=[34.05, -118.25], zoom=9, width=1000, height=1030):
+    def generate_map(self ,center=[34.05, -118.25], zoom=9, width=1000, height=1030):
         if self.geodata_cleaned is None:
             raise ValueError("GeoJSON not loaded. Call load_and_prepare_data() first.")
         geojson_data = json.loads(self.geodata_cleaned.to_json())
         
+        show_elevation = st.checkbox("Show Elevation Layer", value=False,key="show_elevation_checkbox")
         
         self.layer = pdk.Layer(
             "GeoJsonLayer",
@@ -72,7 +73,7 @@ class LACountyMap:
             get_line_color=[255, 255, 255],
             line_width_min_pixels=1
         )
-        show_elev_layer = st.checkbox("Show Elevation Layer", value=False)
+        
         
         
         sample_data = pd.DataFrame({
@@ -101,7 +102,7 @@ class LACountyMap:
 
         
         layers = [self.layer]
-        if show_elev_layer:
+        if show_elevation:
             layers.append(self.bitmap_layer)
             st.markdown(logo_html, unsafe_allow_html=True) 
             

@@ -1,4 +1,5 @@
 import streamlit as st
+st.set_page_config(layout="wide",initial_sidebar_state = "expanded")
 import requests
 import numpy as np
 import pandas as pd
@@ -9,42 +10,23 @@ import logging
 import geopandas as gpd 
 import dask.dataframe as dd
 
-st.set_page_config(layout="wide",
-                   initial_sidebar_state = "expanded")
 
 
 ### Functions ############
-@st.cache_data #read data 
-def read_data():
-    data= pd.read_csv('data/LA Prices 2019-2023 and Census.csv')
-    zip_codes_only=data['Zip Code'].to_list()
-    return zip_codes_only 
 
 @st.cache_data #read data 
 def read_geojson_data():
     geodata= gpd.read_file('data/LA_County_ZIP_Codes.geojson')
     return geodata 
 
-@st.cache_resource
-def load_predictor():
-    return PropertyPricePredictor(
-        model_path="lgbm_model_full.joblib",
-        reference_data_path="data/LA Prices 2019-2023 and Census.csv"
-    )
 
-@st.cache_data
-def read_elevation_data():
-    elev_df= dd.read_csv("data/elevation_data_downsampled.csv")
-    return elev_df
-
-
+@st.cache_data(show_spinner=False)
+def get_cleaned_geodata(pred_df, _geojson_gdf):
+    map_obj = LACountyMap(pred_df, _geojson_gdf)
+    return map_obj.load_and_prepare_data()
 
 ##########################################
 
-
-LAData =read_data()
-predictor = load_predictor()
-elev_data= read_elevation_data()
 geodata=read_geojson_data()
 
 st.title("CSE 6242 Predicting Real Estate Risks via Forest Fires")
@@ -52,11 +34,11 @@ st.title("CSE 6242 Predicting Real Estate Risks via Forest Fires")
 
 st.sidebar.info(
     """
-    - Web App URL: http://xxx.com
-    \n
-    - GitHub repository: <https://github.com/martinytso/forestfires>
+    - GitHub repository\n
+    <https://github.com/martinytso/forestfires>
     """
 )
+
 
 st.sidebar.title("Made By")
 st.sidebar.info(
@@ -64,13 +46,13 @@ st.sidebar.info(
   Team 12\n 
   Ryan Cherry, Martin So, Lida Goldchteine, Katrina Silvorski
     """
+    
 )
-
-
 data={}
 
 # Full-width container
 main_container = st.container()
+
 with main_container:
     # Two main columns: map on left, sliders on right
     left_col, right_col = st.columns([5, 1])  # Adjust ratio if needed
@@ -122,36 +104,37 @@ with main_container:
 ####delete soon
     with left_col:
         st.subheader("Wildfire Risk Map")
-        if 'prediction_data' in st.session_state:
-            with st.spinner("Rendering map..."):
-                map_obj= LACountyMap(st.session_state.prediction_data,geodata)
-                map_obj.load_and_prepare_data()
-                map_obj.generate_map()
-            # deck_map =map_obj.generate_map()  
-            # st.pydeck_chart(deck_map) 
+        with st.spinner("Rendering map..."):
 
-############ delete soon
+            # Define default data regardless of condition
+            default_data = pd.DataFrame({
+                "Zip Code": [int(z) for z in geodata["ZIPCODE"]],
+                "Roll Year": [2021.0] * len(geodata),
+                "Number of Buildings": [0] * len(geodata),
+                "Bathrooms": [0] * len(geodata),
+                "Square Footage": [0] * len(geodata),
+                "Number of Units": [0] * len(geodata),
+                "Property Type": ["Low Density Residential"] * len(geodata),
+                "Median Income": [0] * len(geodata),
+                "Housing Cost (%)": [0] * len(geodata),
+                "Building Age": [0] * len(geodata),
+                "Improvement Value": [0] * len(geodata),
+                "Log_Improvement_Value": [0.0] * len(geodata),
+                "Log_Square_Footage": [0.0] * len(geodata),
+                "Predicted Price": [0.0] * len(geodata),
+            })
 
+            # Use predicted data if available, else default
+            if 'prediction_data' in st.session_state:
+                with st.spinner("Rendering map..."):
+                    cleaned_data = get_cleaned_geodata(st.session_state.prediction_data, geodata)
+                    active_data = st.session_state.prediction_data
+            else:
+                with st.spinner("Loading default map..."):
+                    cleaned_data = get_cleaned_geodata(default_data, geodata)
+                active_data = default_data
 
-############################## TO BE ADDED##################            
-    # with left_col:
-        
-    #     st.subheader("Wildfire Risk Map")
-    #     with st.spinner("Loading predictions and generating map..."):
-    #         map_response = requests.get("http://localhost:8000/get_map/")
-    #         if map_response.status_code == 200:
-    #             map_data = map_response.json()
-                
-    #             deck_json = map_data["deck_json"]
-    #             legend_base64 = map_data["legend_image"]
-
-    #             # Show the PyDeck chart
-    #             st.pydeck_chart(pdk.Deck(deck_json))
-
-    #             # Show the legend image
-    #             st.image(f"data:image/png;base64,{legend_base64}")
-    #         else:
-    #             st.error("Failed to load map")
-
-
-# row2= st.container(border=True
+            # Render map using cleaned data (cached)
+            map_obj = LACountyMap(active_data, geodata)
+            map_obj.geodata_cleaned = cleaned_data
+            map_obj.generate_map()
