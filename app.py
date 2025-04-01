@@ -21,14 +21,24 @@ def read_geojson_data():
     return geodata 
 
 
+@st.cache_data #read data 
+def read_fire_hazard_data():
+    geodata= gpd.read_file('data/fire_hazard_zones.geojson')
+    return geodata 
+
+
 @st.cache_data(show_spinner=False)
-def get_cleaned_geodata(pred_df, _geojson_gdf):
-    map_obj = LACountyMap(pred_df, _geojson_gdf)
+def get_cleaned_geodata(pred_df, _geojson_gdf,_fd):
+    map_obj = LACountyMap(pred_df, _geojson_gdf,_fd)
     return map_obj.load_and_prepare_data()
+
+
 
 ##########################################
 
 geodata=read_geojson_data()
+
+firehazard_data=read_fire_hazard_data()
 
 st.title("CSE 6242 Predicting Real Estate Risks via Forest Fires")
 
@@ -128,14 +138,14 @@ with main_container:
             # Use predicted data if available, else default
             if 'prediction_data' in st.session_state:
                 with st.spinner("Rendering map..."):
-                    cleaned_data = get_cleaned_geodata(st.session_state.prediction_data, geodata)
+                    cleaned_data = get_cleaned_geodata(st.session_state.prediction_data, geodata,firehazard_data)
                     active_data = st.session_state.prediction_data
             else:
                 with st.spinner("Loading default map..."):
-                    cleaned_data = get_cleaned_geodata(default_data, geodata)
+                    cleaned_data = get_cleaned_geodata(default_data, geodata,firehazard_data)
                 active_data = default_data
 
             # Render map using cleaned data (cached)
-            map_obj = LACountyMap(active_data, geodata)
+            map_obj = LACountyMap(active_data, geodata,firehazard_data)
             map_obj.geodata_cleaned = cleaned_data
             map_obj.generate_map()

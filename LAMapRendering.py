@@ -16,24 +16,50 @@ def image_to_base64(image_path):
     return base64.b64encode(data).decode()
 
 
-logo_base64 = image_to_base64("data/colorbar_legend_vertical.png")
-logo_html = f"""
-            <div style="position: absolute; top: 20px; left: 15px; z-index: 99;background: transparent;">
-                <img src="data:image/png;base64,{logo_base64}" style="height: 400px;">
+legend_elev_base64 = image_to_base64("data/colorbar_legend_vertical.png")
+legend_firehazards=image_to_base64("data/firehazard_legend.png")
+
+
+legend_elev_html = f"""
+            <div style="position: absolute; top: 24px; left: 15px; z-index: 99;background: transparent;">
+                <img src="data:image/png;base64,{legend_elev_base64}" style="height: 400px;">
             </div>
         """
+legend_firehazards_html = f"""
+            <div style="position: absolute; top: 10px; left: 20px; z-index: 99;background: transparent;">
+                <img src="data:image/png;base64,{legend_firehazards}" style="height: 200px;">
+            </div>
+        """
+            
+        
+# Define it outside the class
+def classify_color(haz_class):
+    if haz_class == 3:
+        return [255, 255, 200, 180]
+    elif haz_class == 2:
+        return [255, 165, 220, 180]
+    elif haz_class == 1:
+        return [255, 140, 250, 180]
+    else:
+        return [0, 128, 0, 180]
+
+
 
 
 class LACountyMap:
-    def __init__(self, df: pd.DataFrame, gdf: gpd.GeoDataFrame):
-        # Convert to Dask DataFrame for faster parallel computation
+    def __init__(self, df: pd.DataFrame, gdf: gpd.GeoDataFrame, firehazard_df: gpd.GeoDataFrame):
         self.ddf = dd.from_pandas(df.copy(), npartitions=4)
-        # self.elevation_data = dd.from_pandas(elevdf.copy(), npartitions=4)
         self.geojson_data = gdf.copy()
-        self.geodata_cleaned=None
+        self.geodata_cleaned = None
         self.layer = None
         self.scatter_layer = None
-        self.bitmap_layer=None
+        self.bitmap_layer = None
+        self.firehazard_data = firehazard_df.copy()
+
+        # Just apply it here
+        self.firehazard_data["fill_color"] = self.firehazard_data["HAZ_CODE"].apply(classify_color)
+        # self.firehazard_data["fill_color"] = self.firehazard_data["fill_color"].apply(lambda x: list(x))  # Make sure it's JSON serializable
+
     
     def load_and_prepare_data(self):
 
@@ -46,8 +72,6 @@ class LACountyMap:
         self.geodata_cleaned= merged_gdf
         return self.geodata_cleaned
 
-
-
             
 
 
@@ -55,17 +79,25 @@ class LACountyMap:
         if self.geodata_cleaned is None:
             raise ValueError("GeoJSON not loaded. Call load_and_prepare_data() first.")
         geojson_data = json.loads(self.geodata_cleaned.to_json())
+        fh_data= json.loads(self.firehazard_data.to_json())
         
-        show_elevation = st.checkbox("Show Elevation Layer", value=False,key="show_elevation_checkbox")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            show_elevation = st.checkbox("Show Elevation Layer", value=False, key="show_elevation_checkbox")
+
+        with col2:
+            show_firehazard = st.checkbox("Firehazard Layer", value=False, key="show_firehazard_checkbox")
+
         
         self.layer = pdk.Layer(
             "GeoJsonLayer",
             geojson_data,
             pickable=True,
             auto_highlight=True,
-            opacity=0.6,
+            opacity=0.2,
             get_fill_color="""
-                 properties.prediction < 13 ? [200, 200, 200, 180] :
+                properties.prediction < 13 ? [200, 200, 200, 180] :
                 properties.prediction < 14 ? [255, 165, 0, 180] : 
                 [0, 128, 0, 180]
             """,
@@ -74,20 +106,21 @@ class LACountyMap:
         )
         
         
-        
-        sample_data = pd.DataFrame({
-            "lat": [34.0522, 34.0622, 34.0739, 34.0407],  # Downtown, Hollywood, Beverly Hills, USC
-            "lon": [-118.2437, -118.3082, -118.4004, -118.2690],
-            "size": [1000, 1500, 1200, 1300]
-        })
-
-        self.scatter_layer = pdk.Layer(
-            "ScatterplotLayer",
-            data=sample_data,
-            get_position=['lon', 'lat'],
-            get_radius='size',
-            get_fill_color=[0, 0, 255, 160],
-            pickable=True
+        self.firehazard_layer = pdk.Layer(
+            "GeoJsonLayer",
+            fh_data,
+            pickable=True,
+            auto_highlight=True,
+            opacity=0.4,
+            get_fill_color="""
+            
+            properties.HAZ_CODE ==1? [255, 255, 0]:
+            properties.HAZ_CODE ==2? [255, 165, 0]:
+            properties.HAZ_CODE ==3? [255, 0, 0]:
+            [0,128,0,180]
+            """,
+            get_line_color=[255, 255, 255],
+            line_width_min_pixels=1
         )
         
                     
@@ -103,7 +136,12 @@ class LACountyMap:
         layers = [self.layer]
         if show_elevation:
             layers.append(self.bitmap_layer)
-            st.markdown(logo_html, unsafe_allow_html=True) 
+            st.markdown(legend_elev_html, unsafe_allow_html=True) 
+            
+        if show_firehazard:
+            layers.append(self.firehazard_layer)
+            st.markdown(legend_firehazards_html, unsafe_allow_html=True) 
+        layers.append(self.layer)
             
 
         view_state = pdk.ViewState(
