@@ -55,6 +55,7 @@ class LACountyMap:
         self.scatter_layer = None
         self.bitmap_layer = None
         self.firehazard_data = firehazard_df.copy()
+        self.default_layer=None
 
         # Just apply it here
         self.firehazard_data["fill_color"] = self.firehazard_data["HAZ_CODE"].apply(classify_color)
@@ -104,6 +105,18 @@ class LACountyMap:
             get_line_color=[255, 255, 255],
             line_width_min_pixels=1
         )
+                
+        self.default_layer = pdk.Layer(
+            "GeoJsonLayer",
+            geojson_data,
+            pickable=True,
+            auto_highlight=True,
+            opacity=0.2,
+            get_fill_color=[250,250,250,250],
+            get_line_color=[255, 255, 255],
+            line_width_min_pixels=1
+        )
+        
         
         
         self.firehazard_layer = pdk.Layer(
@@ -133,7 +146,8 @@ class LACountyMap:
         )    
 
         
-        layers = [self.layer]
+        layers = [self.default_layer]
+        # default_layer=[self.default_layer]
         if show_elevation:
             layers.append(self.bitmap_layer)
             st.markdown(legend_elev_html, unsafe_allow_html=True) 
@@ -141,7 +155,11 @@ class LACountyMap:
         if show_firehazard:
             layers.append(self.firehazard_layer)
             st.markdown(legend_firehazards_html, unsafe_allow_html=True) 
-        layers.append(self.layer)
+            layers.append(self.default_layer)
+        else:
+            layers[0]=self.layer
+            
+        
             
 
         view_state = pdk.ViewState(
