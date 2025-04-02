@@ -5,7 +5,7 @@ import requests
 import numpy as np
 import pandas as pd
 import requests
-from predictor import PropertyPricePredictor
+from predictor import XGBoostPredictor
 from LAMapRendering import LACountyMap
 import logging 
 import geopandas as gpd 
@@ -70,7 +70,8 @@ with main_container:
 
     with right_col:
         st.subheader("Adjust Parameters")
-        
+        ZipCodeSelector = st.selectbox("Choose a zip code",
+                                       (90047,90011))
         BuildingsParameter = st.slider("Number of Buildings", 1, 5, 3)
         BathroomsParameter = st.slider("Bathrooms", 1, 4, 3)
         SquareFootage = st.slider("Square Footage", 1, 9000, 4285)
@@ -90,6 +91,8 @@ with main_container:
 
         if st.button("Analyze"):
             data = {
+                "Zip Code":[ZipCodeSelector],
+                "Roll Year":[2023],
                 "Number of Buildings": [BuildingsParameter],
                 "Bathrooms": [BathroomsParameter],
                 "Square Footage": [SquareFootage],

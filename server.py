@@ -11,7 +11,7 @@ import time
 import logging
 from LAMapRendering import LACountyMap
 import base64
-from predictor import PropertyPricePredictor
+from predictor import XGBoostPredictor
 from fastapi.responses import JSONResponse
 # Initialize FastAPI app
 app = FastAPI()
@@ -81,28 +81,17 @@ def get_map():
         return {"error": "No data submitted yet."}
 
     # Load predictor model (or import your predictor class)
-    model = PropertyPricePredictor("data/lgbm_model_full.joblib","data/LA Prices 2019-2023 and Census.csv")
+    model = XGBoostPredictor(submitted_data,"data/LA Prices 2019-2023 and Census.csv")
     # logger.info(f"submitted_data: {submitted_data}") #debug 
     
-    input_df = pd.DataFrame(submitted_data)
-    logger.info(f"submitted_data: {input_df}")
+    # input_df = pd.DataFrame(submitted_data)
+    logger.info(f"submitted_data: {submitted_data}")
+    logger.info(f"submitted_data: {type(submitted_data)}")
 
     # Predict prices
-    predicted_prices_df = model.predict(input_df) 
-    predicted_prices_df=pd.DataFrame(predicted_prices_df)
-    logger.info(f"submitted_data: {predicted_prices_df}")
+    predicted_prices_df = model.predict_price()
+    # predicted_prices_df=pd.DataFrame(predicted_prices_df)
+    # logger.info(f"submitted_data: {predicted_prices_df}")
 
-    
-
-    # elev_df = pd.read_csv("data/elevation_data_downsampled.csv")
-    # map_obj = LACountyMap(predicted_prices_df, elev_df, "data/LA_County_ZIP_Codes.geojson")
-    # map_obj.load_and_prepare_data()
-    # deck_json = map_obj.generate_map()  # Returns the pydeck JSON (not actual image)
-    # with open("data/colorbar_legend_vertical.png", "rb") as img_file:
-        # legend_base64 = base64.b64encode(img_file.read()).decode()
     
     return predicted_prices_df.to_dict(orient='records')
-    # return JSONResponse(content={
-    #     "deck_json": deck_json,
-    #     "legend_image": legend_base64
-    # })
