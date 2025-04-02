@@ -9,10 +9,11 @@ import joblib
 import json
 import time
 import logging
-from LAMapRendering import LACountyMap
 import base64
 from predictor import XGBoostPredictor
 from fastapi.responses import JSONResponse
+from typing import List
+from pydantic import BaseModel
 # Initialize FastAPI app
 app = FastAPI()
 
@@ -55,16 +56,27 @@ async def startup_event():
 def root():
     return {"message": "FastAPI server running"}
 
-# Style function for fire hazard zones
+
+class PropertyData(BaseModel):
+    Zip_Code: int
+    Roll_Year: int
+    Number_of_Buildings: int
+    Bathrooms: int
+    Square_Footage: int
+    Number_of_Units: int
+    Property_Type: str
+    Median_Income: int
+    Housing_Cost_Percentage: int
+    Building_Age: int
+    Improvement_Value: int
 
 
-# Preprocess submitted form data
 
 # API endpoint to receive form data
 @app.post("/submit_form/")
-async def receive_form_data(data: dict):
+async def receive_form_data(data: List[PropertyData]):
     global submitted_data
-    submitted_data = data
+    submitted_data = [d.model_dump() for d in data]
     return {"message": "Data received successfully"}
 
 # API endpoint to return the latest submitted data

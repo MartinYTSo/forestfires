@@ -4,13 +4,26 @@ from joblib import load
 import pandas as pd
 import numpy as np
 import dask.dataframe as dd
+from typing import List, Dict
 
 
 
 class XGBoostPredictor:
-    def __init__(self, submitted_data: dict, csv_path: str):
+    def __init__(self, submitted_data:  List[Dict], csv_path: str):
         self.df = pd.DataFrame(submitted_data)
-        self.zip_code = int(self.df['Zip Code'].unique()[0])
+        self.df.rename(columns={
+            "Zip_Code": "Zip Code",
+            "Roll_Year": "Roll Year",
+            "Number_of_Buildings": "Number of Buildings",
+            "Bathrooms": "Bathrooms",
+            "Square_Footage": "Square Footage",
+            "Number_of_Units": "Number of Units",
+            "Property_Type": "Property Type",
+            "Median_Income": "Median Income",
+            "Housing_Cost_Percentage": "Housing Cost (%)",
+            "Building_Age": "Building Age",
+            "Improvement_Value": "Improvement Value"
+        }, inplace=True)
         self.data_path = csv_path
         self.dask_df = dd.read_csv(self.data_path)
 
@@ -24,23 +37,59 @@ class XGBoostPredictor:
         self.df['Log_Improvement_Value'] = np.log1p(self.df['Improvement Value'])
         self.df['Log_Square_Footage'] = np.log1p(self.df['Square Footage'])
         self.df['Housing Cost % of Income']= self.df['Housing Cost (%)']
-
+        self.df.rename(columns={"Zip_Code": "Zip Code"}, inplace=True)
+        
+        return self.df #only for debugging
+        
+        
     def add_zip_median_price_and_coords(self):
-        filtered = self.dask_df[self.dask_df['Zip Code'] == self.zip_code]
-        median_value = filtered["Total Value (2023 Adjusted)"].median_approximate().compute()
-        lat_lon = filtered[['Location Latitude', 'Location Longitude']].compute().iloc[0]
+        zip_to_median = {}
+        zip_to_coords = {}
 
-        self.df['Zip_Median_Price'] = median_value
-        self.df['Location Latitude'] = int(np.ceil(lat_lon['Location Latitude']))
-        self.df['Location Longitude'] = int(np.ceil(lat_lon['Location Longitude']))
+        for zip_code in self.df['Zip Code'].unique():
+            filtered = self.dask_df[self.dask_df['Zip Code'] == zip_code]
+            median_val = filtered["Total Value (2023 Adjusted)"].median_approximate().compute()
+            lat_lon = filtered[['Location Latitude', 'Location Longitude']].compute().iloc[0]
 
+            zip_to_median[zip_code] = median_val
+            zip_to_coords[zip_code] = (lat_lon['Location Latitude'], lat_lon['Location Longitude'])
+
+        self.df['Zip_Median_Price'] = self.df['Zip Code'].map(zip_to_median)
+        self.df['Location Latitude'] = self.df['Zip Code'].map(lambda z: zip_to_coords[z][0])
+        self.df['Location Longitude'] = self.df['Zip Code'].map(lambda z: zip_to_coords[z][1])
+        
+        return self.df #only for debugging
+
+
+    # def add_zip_median_price_and_coords(self):
+    #     filtered = self.dask_df[self.dask_df['Zip Code'] == self.zip_code]
+    #     median_value = filtered["Total Value (2023 Adjusted)"].median_approximate().compute()
+    #     lat_lon = filtered[['Location Latitude', 'Location Longitude']].compute().iloc[0]
+
+    #     self.df['Zip_Median_Price'] = median_value
+    #     self.df['Location Latitude'] = int(np.ceil(lat_lon['Location Latitude']))
+    #     self.df['Location Longitude'] = int(np.ceil(lat_lon['Location Longitude']))
+
+    # def add_price_bin(self):
+    #     filtered = self.dask_df[self.dask_df['Zip Code'] == self.zip_code].compute()
+    #     filtered["Price Bin"] = pd.qcut(
+    #         filtered['Total Value (2023 Adjusted)'], q=20, labels=False, duplicates="drop"
+    #     )
+    #     average_bin = filtered["Price Bin"].mean()
+    #     self.df['Price Bin'] = round(average_bin)
+    
     def add_price_bin(self):
-        filtered = self.dask_df[self.dask_df['Zip Code'] == self.zip_code].compute()
-        filtered["Price Bin"] = pd.qcut(
-            filtered['Total Value (2023 Adjusted)'], q=20, labels=False, duplicates="drop"
-        )
-        average_bin = filtered["Price Bin"].mean()
-        self.df['Price Bin'] = round(average_bin)
+        zip_bins = {}
+        for zip_code in self.df['Zip Code'].unique():
+            filtered = self.dask_df[self.dask_df['Zip Code'] == zip_code].compute()
+            filtered["Price Bin"] = pd.qcut(
+                filtered['Total Value (2023 Adjusted)'], q=20, labels=False, duplicates="drop"
+            )
+            avg_bin = filtered["Price Bin"].mean()
+            zip_bins[zip_code] = round(avg_bin)
+
+        self.df['Price Bin'] = self.df['Zip Code'].map(zip_bins)
+
         
     def select_model_features(self):
         expected_features = [
@@ -49,6 +98,13 @@ class XGBoostPredictor:
             'Median Income', 'Housing Cost % of Income', 'Building Age',
             'Log_Improvement_Value', 'Log_Square_Footage', 'Price Bin', 'Zip_Median_Price'
         ]
+        
+        self.df.rename(columns={"Roll_Year":"Roll Year",
+                                "Number_of_Buildings":"Number of Buildings",
+                                "Number_of_Units":"Number of Units",
+                                "Median_Income":"Median Income",
+                                "Building_Age":"Building Age"},inplace=True)
+
         self.df = self.df[expected_features]
         
         
@@ -84,17 +140,13 @@ class XGBoostPredictor:
         return self.df
     
     def predict_price(self, base_model_path="model/xgb_base.joblib", high_model_path="model/xgb_high.joblib", cutoff=1_500_000):
-        self.process_all()
+        df_to_pass= self.process_all() #returns a dataframe 
         model_base = load(base_model_path)
         model_high = load(high_model_path)
-
-        if self.df['Zip_Median_Price'].item() < cutoff:
-            prediction = np.expm1(model_base.predict(self.df))
-            self.model_used = "xgb_base"
-            
-        else:
-            prediction = np.expm1(model_high.predict(self.df))
-            self.model_used = "xgb_high"
-
-        self.df['Predicted Price'] = prediction
+        df_over_thresh= df_to_pass[df_to_pass['Zip_Median_Price']>cutoff]
+        df_under_thresh=df_to_pass[df_to_pass['Zip_Median_Price']<cutoff]
+        df_under_thresh['Predicted Price']= np.expm1(model_base.predict(df_under_thresh))
+        df_over_thresh['Predicted Price']= np.expm1(model_high.predict(df_over_thresh))
+        df_final= pd.concat([df_under_thresh, df_over_thresh], ignore_index=True)
+        self.df=df_final
         return self.df
