@@ -1,9 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
-import geopandas as gpd
-import numpy as np
-import pandas as pd
 import requests
 import joblib
 import json
@@ -102,8 +99,9 @@ def get_map():
 
     # Predict prices
     predicted_prices_df = model.predict_price()
-    # predicted_prices_df=pd.DataFrame(predicted_prices_df)
-    # logger.info(f"submitted_data: {predicted_prices_df}")
+
+    logger.info(f"submitted_data: {predicted_prices_df}")
+    logger.info(f"submitted_data: {type(predicted_prices_df)}")
 
     
     return predicted_prices_df.to_dict(orient='records')

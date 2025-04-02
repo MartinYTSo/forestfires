@@ -78,6 +78,7 @@ with main_container:
                 response = requests.post("http://localhost:8000/submit_form/", json=all_data)
                 if response.status_code == 200:
                     pred_response = requests.get("http://localhost:8000/get_df_predictions")
+                    # st.write(pred_response.json()) #debug only
                     if pred_response.status_code == 200:
                         st.session_state.prediction_data = pd.DataFrame(pred_response.json())
                         st.success("Prediction complete!")
@@ -89,6 +90,11 @@ with main_container:
     # === LEFT PANEL: Map Display ===
     with left_col:
         st.subheader("Wildfire Risk Map")
+        if st.button("Reset Map"):
+            if "prediction_data" in st.session_state:
+                del st.session_state["prediction_data"]
+            st.rerun()
+
 
         # Layer toggles
         show_firehazard = st.checkbox("Overlay: Fire Hazard Zones", value=False)

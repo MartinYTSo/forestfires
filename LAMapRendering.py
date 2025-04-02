@@ -17,7 +17,7 @@ class PredictionRiskMap:
         # Ensure ZIP Code column matches
         self.pred_df["Zip Code"] = self.pred_df["Zip Code"].astype(int)
         self.pred_df['predprice'] = self.pred_df['Predicted Price'].apply(lambda x: f"${x:,.0f}")
-        self.pred_df.rename(columns={"Predicted Price":"prednum"},inplace=True)
+        self.pred_df.rename(columns={"Price Bin":"pricebin"},inplace=True)
         self.gdf["ZIPCODE"] = self.gdf["ZIPCODE"].astype(int)
         merged_gdf = self.gdf.merge(self.pred_df, how='left', left_on='ZIPCODE', right_on='Zip Code')
         self.cleaned_gdf=merged_gdf
@@ -34,9 +34,27 @@ class PredictionRiskMap:
             auto_highlight=True,
             opacity=0.4,
             get_fill_color="""
-                properties.prednum < 300000 ? [200, 200, 200, 200] :
-                properties.prednum > 400000 ? [255, 165, 0, 180] :
-                [0, 128, 0, 180]
+                properties.pricebin == 1 ? [0, 128, 0, 180] :
+                properties.pricebin == 2 ? [28, 120, 0, 180] :
+                properties.pricebin == 3 ? [56, 112, 0, 180] :
+                properties.pricebin == 4 ? [85, 104, 0, 180] :
+                properties.pricebin == 5 ? [113, 96, 0, 180] :
+                properties.pricebin == 6 ? [141, 88, 0, 180] :
+                properties.pricebin == 7 ? [170, 80, 0, 180] :
+                properties.pricebin == 8 ? [198, 72, 0, 180] :
+                properties.pricebin == 9 ? [226, 64, 0, 180] :
+                properties.pricebin == 10 ? [255, 56, 0, 180] :
+                properties.pricebin == 11 ? [255, 48, 0, 180] :
+                properties.pricebin == 12 ? [255, 40, 0, 180] :
+                properties.pricebin == 13 ? [255, 32, 0, 180] :
+                properties.pricebin == 14 ? [255, 24, 0, 180] :
+                properties.pricebin == 15 ? [255, 16, 0, 180] :
+                properties.pricebin == 16 ? [255, 8, 0, 180] :
+                properties.pricebin == 17 ? [255, 4, 0, 180] :
+                properties.pricebin == 18 ? [255, 2, 0, 180] :
+                properties.pricebin == 19 ? [255, 1, 0, 180] :
+                properties.pricebin == 20 ? [255, 0, 0, 180] :
+                [200, 200, 200, 50]
             """,
             get_line_color=[255, 255, 255],
             line_width_min_pixels=1,
