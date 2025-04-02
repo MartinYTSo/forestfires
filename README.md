@@ -37,7 +37,12 @@ APP/
 │   ├── elevation_data_downsampled.csv
 │   ├── LA Prices 2019–2023 and Census.csv
 │   ├── LA_County_ZIP_Codes.geojson
-│   └── lgbm_model_full.joblib
+│   └── firehazard_legend.png
+|   └──fire_hazard_zones.geojson
+
+├── model/
+│   ├── xgb_base.joblib
+│   ├── xgb_high.joblib
 
 ├── app.py
 ├── LAMapRendering.py
