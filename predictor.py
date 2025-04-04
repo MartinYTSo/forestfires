@@ -60,23 +60,6 @@ class XGBoostPredictor:
         
         return self.df #only for debugging
 
-
-    # def add_zip_median_price_and_coords(self):
-    #     filtered = self.dask_df[self.dask_df['Zip Code'] == self.zip_code]
-    #     median_value = filtered["Total Value (2023 Adjusted)"].median_approximate().compute()
-    #     lat_lon = filtered[['Location Latitude', 'Location Longitude']].compute().iloc[0]
-
-    #     self.df['Zip_Median_Price'] = median_value
-    #     self.df['Location Latitude'] = int(np.ceil(lat_lon['Location Latitude']))
-    #     self.df['Location Longitude'] = int(np.ceil(lat_lon['Location Longitude']))
-
-    # def add_price_bin(self):
-    #     filtered = self.dask_df[self.dask_df['Zip Code'] == self.zip_code].compute()
-    #     filtered["Price Bin"] = pd.qcut(
-    #         filtered['Total Value (2023 Adjusted)'], q=20, labels=False, duplicates="drop"
-    #     )
-    #     average_bin = filtered["Price Bin"].mean()
-    #     self.df['Price Bin'] = round(average_bin)
     
     def add_price_bin(self):
         zip_bins = {}
