@@ -1,5 +1,5 @@
-# forestfires
-Forest Fire Project For Data and Visual Analytics CSE 6242
+# CSE 6242 Predicting Real Estate Prices via Forest Fire Risk
+Class Project for Georgia Tech's Data and Visual Analytics CSE 6242
 
 # Installation
 There are 2 ways to install the repo.
@@ -86,6 +86,21 @@ APP/
 ├── server.py
 └── requirements.txt
 ```
+
+## How to Shut Down App 
+
+Streamlit will shut down the app if you close the terminal.
+
+To shut down the backend server, click in your terminal where the FastAPI server is running and press `Ctrl+C`
+
+
+## Uninstallation 
+
+If you were using the one click installation, run 
+
+`pip uninstall -r requirements.txt -y` (make sure you run it in the root folder!)
+
+If you were using the manual installation, simply delete everything in the root folder.
 
 
 
