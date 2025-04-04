@@ -56,7 +56,7 @@ class PredictionRiskMap:
                 properties.pricebin == 20 ? [255, 0, 0, 180] :
                 [200, 200, 200, 50]
             """,
-            get_line_color=[255, 255, 255],
+            get_line_color=[0, 0, 0],
             line_width_min_pixels=1,
         )
 

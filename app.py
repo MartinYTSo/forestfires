@@ -7,6 +7,7 @@ import pandas as pd
 import geopandas as gpd
 import streamlit.components.v1 as components
 from LAMapRendering import PredictionRiskMap, FireHazardMap, ElevationMap
+from io import BytesIO
 
 from LAMapRendering import get_legend_html  
 ### Cached Data Loaders
@@ -16,7 +17,9 @@ def read_geojson_data():
 
 @st.cache_data
 def read_fire_hazard_data():
-    return gpd.read_file('data/fire_hazard_zones.geojson')
+    urlresponse= requests.get("https://public.gis.lacounty.gov/public/rest/services/LACounty_Dynamic/Hazards/MapServer/2/query?where=1%3D1&outFields=*&f=geojson")
+    gdf = gpd.read_file(BytesIO(urlresponse.content))
+    return gdf
 
 @st.cache_data(show_spinner=False)
 def get_cleaned_geodata(pred_df, _geojson_gdf):
@@ -29,7 +32,7 @@ firehazard_data = read_fire_hazard_data()
 
 all_zipcodes= tuple(geodata['ZIPCODE'].astype(int).tolist())
 # App title
-st.title("CSE 6242 Predicting Real Estate Risks via Forest Fires")
+st.title("CSE 6242 Predicting Real Estate Prices via Forest Fire Risk")
 
 # Sidebar
 st.sidebar.info("[GitHub Repository](https://github.com/martinytso/forestfires)")
