@@ -15,16 +15,18 @@ Use the manual isntallation if you prefer to create a virtual environment `.venv
 ## Step 1 
 Clone this repository to your local folder. [Download all the items from this link](https://www.dropbox.com/scl/fo/e9f78zxipm0zev27khcs6/ABtPqI4RZWsonqLRZZATccY?rlkey=ut4opxix9gbhq6uxs5oxykohl&st=b98wbvig&dl=0 ) and move it into the `data` folder in the repo **ensure you do not change the file names**:  
 
-![image](https://github.com/user-attachments/assets/65166b7a-e764-4f9f-949a-69e6f3a287f2)
+![image](https://github.com/user-attachments/assets/07a5771c-ad2e-440b-89b9-5c4974797481)
+
 
 ## Step 2 
 Open the root directory and double click  `start.bat` (for Windows Users) or `start.sh` for MacOS users
 
 You will know everything works fine if you have 2 command prompt windows pop up. One for the backend FASTAPI server, and the other for the frontend streamlit server
+![image](https://github.com/user-attachments/assets/07681a9b-57a1-4948-96b9-c9556ff363b1)
 
 
 
-# Manual Instructions 
+# Manual Installation 
 ## Step 1 
 Clone this repository to your local folder. [Download all the items from this link](https://www.dropbox.com/scl/fo/e9f78zxipm0zev27khcs6/ABtPqI4RZWsonqLRZZATccY?rlkey=ut4opxix9gbhq6uxs5oxykohl&st=b98wbvig&dl=0 ) and move it into the `data` folder in the repo **ensure you do not change the file names**:  
 
@@ -49,7 +51,7 @@ Ensure your virtual envrionment activated. You will know if the terminal has a `
 Now you can enter `pip install -r requirements.txt`. This will ensure all packages associated with this app will be installed to your virtual environment
 
 ## Step 4
-open a terminal and run `uvicorn server:app --host localhost --port 8000`
+Open a terminal and run `uvicorn server:app --host localhost --port 8000`
 
 ## Step 5
 Open another terminal window and run `streamlit run app.py`. It will automatically redirect you to the app
@@ -59,9 +61,6 @@ Open another terminal window and run `streamlit run app.py`. It will automatical
 
 Make sure your files structure is like this
 
-
-
-## 📁 Project Structure
 
 ```
 APP/
