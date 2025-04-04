@@ -1,6 +1,8 @@
 # CSE 6242 Predicting Real Estate Prices via Forest Fire Risk
 Class Project for Georgia Tech's Data and Visual Analytics CSE 6242
 
+Authors:  Lidia Goldchteine, Katrina Slivorski, Ryan Cherry, Martin Yip Toll So
+
 # Installation
 There are 2 ways to install the repo.
  - 1.The fast, one click installation for Windows and MacOS
