@@ -13,7 +13,9 @@ from LAMapRendering import get_legend_html
 ### Cached Data Loaders
 @st.cache_data
 def read_geojson_data():
-    return gpd.read_file('data/LA_County_ZIP_Codes.geojson')
+    mapurl= requests.get("https://public.gis.lacounty.gov/public/rest/services/LACounty_Dynamic/Administrative_Boundaries/MapServer/5/query?outFields=*&where=1%3D1&f=geojson")
+    gdf_zipcode = gpd.read_file(BytesIO(mapurl.content))
+    return gdf_zipcode
 
 @st.cache_data
 def read_fire_hazard_data():
