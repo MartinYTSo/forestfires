@@ -47,7 +47,7 @@ with main_container:
     # === RIGHT PANEL: Parameters ===
     with right_col:
         st.subheader("Adjust Parameters")
-        ZipCodeSelector = st.multiselect("Choose a zip code",all_zipcodes,[all_zipcodes[0]])
+        ZipCodeSelector = st.multiselect("Choose a zip code",all_zipcodes,90210)
         BuildingsParameter = st.slider("Number of Structures (i,e Garage, ADU)", 1, 5, 3) # aka Number_Of_Buildings
         BathroomsParameter = st.slider("Bathrooms", 1, 4, 3)
         SquareFootage = st.slider("Square Footage", 1, 9000, 4285)
@@ -123,6 +123,7 @@ with main_container:
                     "Log_Improvement_Value": [0.0] * len(geodata),
                     "Log_Square_Footage": [0.0] * len(geodata),
                     "Predicted Price": [0.0] * len(geodata),
+                    "Fire Risk Score": [0.0] * len(geodata),
                 })
 
             cleaned_data = get_cleaned_geodata(active_data, geodata)

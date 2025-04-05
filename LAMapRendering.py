@@ -24,8 +24,8 @@ class PredictionRiskMap:
         # Ensure ZIP Code column matches
         self.pred_df["Zip Code"] = self.pred_df["Zip Code"].astype(int)
         self.pred_df['predprice'] = self.pred_df['Predicted Price'].apply(lambda x: f"${x:,.0f}")
+        self.pred_df['riskname']=self.pred_df["Fire Risk Score"].map(risk_map)
         self.pred_df.rename(columns={"Price Bin":"pricebin", "Fire Risk Score":"firescore"},inplace=True)
-        self.pred_df['riskname']=self.pred_df["firescore"].map(risk_map)
         self.gdf["ZIPCODE"] = self.gdf["ZIPCODE"].astype(int)
         merged_gdf = self.gdf.merge(self.pred_df, how='left', left_on='ZIPCODE', right_on='Zip Code')
         self.cleaned_gdf=merged_gdf
@@ -42,10 +42,11 @@ class PredictionRiskMap:
             auto_highlight=True,
             opacity=0.4,
             get_fill_color="""
+                properties.firescore == 0 ? [102, 93, 91 ,180] :
                 properties.firescore == 1 ? [0, 128, 0, 180] :
                 properties.firescore == 2 ? [255, 105, 26, 180] :
                 properties.firescore == 3 ? [255, 0, 0, 180] :
-                [200, 200, 200, 50]
+                [211, 205, 204, 50]
             """,
             get_line_color=[0, 0, 0],
             line_width_min_pixels=1,
