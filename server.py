@@ -90,7 +90,7 @@ def get_map():
         return {"error": "No data submitted yet."}
 
     # Load predictor model (or import your predictor class)
-    model = XGBoostPredictor(submitted_data,"data/LA Prices 2019-2023 and Census.csv")
+    model = XGBoostPredictor(submitted_data,"data/LA Prices 2019-2023 and Census.csv","data/zip_fire_risk_final_output.csv")
     # logger.info(f"submitted_data: {submitted_data}") #debug 
     
     # input_df = pd.DataFrame(submitted_data)
