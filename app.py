@@ -123,7 +123,7 @@ with main_container:
                     "Log_Improvement_Value": [0.0] * len(geodata),
                     "Log_Square_Footage": [0.0] * len(geodata),
                     "Predicted Price": [0.0] * len(geodata),
-                    "Fire Risk Score": [0.0] * len(geodata),
+                    "Fire Risk Score": [5] * len(geodata), #random number to make it white
                 })
 
             cleaned_data = get_cleaned_geodata(active_data, geodata)
