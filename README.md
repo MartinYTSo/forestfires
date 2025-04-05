@@ -17,7 +17,8 @@ Use the manual isntallation if you prefer to create a virtual environment `.venv
 ## Step 1 
 Clone this repository to your local folder. [Download all the items from this link](https://www.dropbox.com/scl/fo/e9f78zxipm0zev27khcs6/ABtPqI4RZWsonqLRZZATccY?rlkey=ut4opxix9gbhq6uxs5oxykohl&st=b98wbvig&dl=0 ) and move it into the `data` folder in the repo **ensure you do not change the file names**:  
 
-![image](https://github.com/user-attachments/assets/07a5771c-ad2e-440b-89b9-5c4974797481)
+![image](https://github.com/user-attachments/assets/c4e8ec14-61dc-45cc-99de-64e1aaa6584b)
+
 
 
 ## Step 2 
@@ -32,7 +33,8 @@ You will know everything works fine if you have 2 command prompt windows pop up.
 ## Step 1 
 Clone this repository to your local folder. [Download all the items from this link](https://www.dropbox.com/scl/fo/e9f78zxipm0zev27khcs6/ABtPqI4RZWsonqLRZZATccY?rlkey=ut4opxix9gbhq6uxs5oxykohl&st=b98wbvig&dl=0 ) and move it into the `data` folder in the repo **ensure you do not change the file names**:  
 
-![image](https://github.com/user-attachments/assets/65166b7a-e764-4f9f-949a-69e6f3a287f2)
+![image](https://github.com/user-attachments/assets/597d0ee5-b13a-454f-b858-bf8ceaca9b08)
+
 
 
 ## Step 2 
@@ -79,8 +81,8 @@ APP/
 |   └──fire_hazard_zones.geojson
 
 ├── model/
-│   ├── xgb_base.joblib
-│   ├── xgb_high.joblib
+│   ├── model_xgb_base_fire.joblib
+│   ├── model_xgb_high_fire.joblib
 
 ├── app.py
 ├── LAMapRendering.py
