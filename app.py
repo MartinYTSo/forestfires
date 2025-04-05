@@ -48,7 +48,7 @@ with main_container:
     with right_col:
         st.subheader("Adjust Parameters")
         ZipCodeSelector = st.multiselect("Choose a zip code",all_zipcodes,[all_zipcodes[0]])
-        BuildingsParameter = st.slider("Number of Buildings", 1, 5, 3)
+        BuildingsParameter = st.slider("Number of Structures (i,e Garage, ADU)", 1, 5, 3) # aka Number_Of_Buildings
         BathroomsParameter = st.slider("Bathrooms", 1, 4, 3)
         SquareFootage = st.slider("Square Footage", 1, 9000, 4285)
         NumberOfUnitsParameter = st.selectbox("No. of Units", [1, 2, 3, 4, 5], index=1)
