@@ -12,13 +12,13 @@ from io import BytesIO
 from LAMapRendering import get_legend_html  
 ### Cached Data Loaders
 @st.cache_data
-def read_geojson_data():
+def read_geojson_data(): #Get Zipcode Data for LA county  https://hub.arcgis.com/datasets/lacounty::la-county-zip-codes/about
     mapurl= requests.get("https://public.gis.lacounty.gov/public/rest/services/LACounty_Dynamic/Administrative_Boundaries/MapServer/5/query?outFields=*&where=1%3D1&f=geojson")
     gdf_zipcode = gpd.read_file(BytesIO(mapurl.content))
     return gdf_zipcode
 
 @st.cache_data
-def read_fire_hazard_data():
+def read_fire_hazard_data(): #Get Fire Hazard Data https://geohub.lacity.org/datasets/bf87f4b1e6954f4697006ff41420c083_0/explore?location=34.124500%2C-118.341207%2C10.46 
     urlresponse= requests.get("https://public.gis.lacounty.gov/public/rest/services/LACounty_Dynamic/Hazards/MapServer/2/query?where=1%3D1&outFields=*&f=geojson")
     gdf = gpd.read_file(BytesIO(urlresponse.content))
     return gdf
