@@ -34,7 +34,8 @@ You will know everything works fine if you have 2 command prompt windows pop up.
 ## Step 1 
 Clone this repository to your local folder. [Download all the items from this link](https://www.dropbox.com/scl/fo/e9f78zxipm0zev27khcs6/ABtPqI4RZWsonqLRZZATccY?rlkey=ut4opxix9gbhq6uxs5oxykohl&st=b98wbvig&dl=0 ) and move it into the `data` folder in the repo **ensure you do not change the file names**:  
 
-![image](https://github.com/user-attachments/assets/597d0ee5-b13a-454f-b858-bf8ceaca9b08)
+![image](https://github.com/user-attachments/assets/1b23ddf0-722f-470a-9ae3-0c273f03ee9e)
+
 
 
 
@@ -69,8 +70,8 @@ Make sure your files structure is like this
 
 ```
 APP/
-├── __pycache__/
-├── .venv/
+├── __pycache__/ #optional 
+├── .venv/ #optional
 
 ├── data/
 │   ├── colorbar_legend_vertical.png
