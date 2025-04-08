@@ -8,7 +8,7 @@ import base64
 risk_map = {
     0: 'No Fire',
     1: 'Low',
-    2: 'Mid',
+    2: 'Medium',
     3: 'High'
 }
 
@@ -42,9 +42,9 @@ class PredictionRiskMap:
             auto_highlight=True,
             opacity=0.4,
             get_fill_color="""
-                properties.firescore == 0 ? [102, 93, 91 ,180] :
-                properties.firescore == 1 ? [0, 128, 0, 180] :
-                properties.firescore == 2 ? [255, 105, 26, 180] :
+                properties.firescore == 0 ?  [0, 128, 0, 180]  :
+                properties.firescore == 1 ? [255, 255, 0, 180]:
+                properties.firescore == 2 ? [255, 165, 0, 180]:
                 properties.firescore == 3 ? [255, 0, 0, 180] :
                 [211, 205, 204, 50]
             """,
@@ -173,12 +173,12 @@ def get_legend_html(show_elev=False, show_fire=False):
                 <img src="data:image/png;base64,{legend_elev_base64}" style="height: 400px;">
             </div>
         """
-    if show_fire:
-        legend_firehazards = image_to_base64("data/firehazard_legend.png")
-        legend_html += f"""
-            <div style="position: absolute; top: 10px; left: 40px; z-index: 999;">
-                <img src="data:image/png;base64,{legend_firehazards}" style="height: 200px;">
-            </div>
-        """
+    # if show_fire:
+    #     legend_firehazards = image_to_base64("data/firehazard_legend.png")
+    #     legend_html += f"""
+    #         <div style="position: absolute; top: 10px; left: 40px; z-index: 999;">
+    #             <img src="data:image/png;base64,{legend_firehazards}" style="height: 200px;">
+    #         </div>
+    #     """
     return legend_html
 
