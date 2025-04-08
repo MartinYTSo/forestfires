@@ -17,7 +17,8 @@ Use the manual isntallation if you prefer to create a virtual environment `.venv
 ## Step 1 
 Clone this repository to your local folder. [Download all the items from this link](https://www.dropbox.com/scl/fo/e9f78zxipm0zev27khcs6/ABtPqI4RZWsonqLRZZATccY?rlkey=ut4opxix9gbhq6uxs5oxykohl&st=b98wbvig&dl=0 ) and move it into the `data` folder in the repo **ensure you do not change the file names**:  
 
-![image](https://github.com/user-attachments/assets/c4e8ec14-61dc-45cc-99de-64e1aaa6584b)
+![image](https://github.com/user-attachments/assets/d69faea2-6c3e-400d-ab0e-239c3d6f8116)
+
 
 
 
