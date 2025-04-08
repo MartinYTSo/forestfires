@@ -11,7 +11,13 @@ Option 1: One-Click Installation (Windows/Mac)
  and move them to the data/ folder.
 
 
-3. Run start.bat (Windows) or start.sh (Mac). Two terminals will launch: one for FastAPI, one for Streamlit.
+3.
+Windows: Run start.bat
+
+Mac (make sure you run this command in the folder): 
+
+chmod +x start.sh
+./start.sh
 
 Option 2: Manual Installation (Recommended for Developers)
 1. Clone the repo and download data as above.
