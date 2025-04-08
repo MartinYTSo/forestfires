@@ -25,6 +25,11 @@ Clone this repository to your local folder. [Download all the items from this li
 ## Step 2 
 Open the root directory and double click  `start.bat` (for Windows Users) or `start.sh` for MacOS users
 
+Mac (make sure you run this command in the folder): 
+```
+chmod +x start.sh
+./start.sh
+```
 You will know everything works fine if you have 2 command prompt windows pop up. One for the backend FASTAPI server, and the other for the frontend streamlit server
 ![image](https://github.com/user-attachments/assets/07681a9b-57a1-4948-96b9-c9556ff363b1)
 
