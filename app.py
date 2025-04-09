@@ -2,7 +2,6 @@ import streamlit as st
 st.set_page_config(layout="wide", initial_sidebar_state="expanded")
 
 import requests
-import numpy as np
 import pandas as pd
 import geopandas as gpd
 import streamlit.components.v1 as components
@@ -10,7 +9,7 @@ from LAMapRendering import PredictionRiskMap, FireHazardMap, ElevationMap
 from io import BytesIO
 
 from LAMapRendering import get_legend_html  
-### Cached Data Loaders
+
 @st.cache_data
 def read_geojson_data(): #Get Zipcode Data for LA county  https://hub.arcgis.com/datasets/lacounty::la-county-zip-codes/about
     mapurl= requests.get("https://public.gis.lacounty.gov/public/rest/services/LACounty_Dynamic/Administrative_Boundaries/MapServer/5/query?outFields=*&where=1%3D1&f=geojson")
@@ -28,7 +27,7 @@ def get_cleaned_geodata(pred_df, _geojson_gdf):
     map_obj = PredictionRiskMap(pred_df, _geojson_gdf)
     return map_obj.prepare_data()
 
-# Load data
+
 geodata = read_geojson_data()
 firehazard_data = read_fire_hazard_data()
 
@@ -46,7 +45,7 @@ main_container = st.container()
 with main_container:
     left_col, right_col = st.columns([5, 1])
 
-    # === RIGHT PANEL: Parameters ===
+
     with right_col:
         st.subheader("Adjust Parameters")
         ZipCodeSelector = st.multiselect("Choose a zip code",all_zipcodes,90210)
@@ -92,7 +91,6 @@ with main_container:
                 else:
                     st.error("Prediction failed.")
 
-    # === LEFT PANEL: Map Display ===
     with left_col:
         st.subheader("Wildfire Risk Map")
         if st.button("Reset Map"):
@@ -101,7 +99,7 @@ with main_container:
             st.rerun()
 
 
-        # Layer toggles
+
         show_firehazard = st.checkbox("Overlay: Fire Hazard Zones", value=False)
         show_elevation = st.checkbox("Overlay: Elevation", value=False)
 
@@ -130,12 +128,12 @@ with main_container:
 
             cleaned_data = get_cleaned_geodata(active_data, geodata)
 
-            # Build base map
+            #base map
             pred_map = PredictionRiskMap(active_data, geodata)
             pred_map.cleaned_gdf = cleaned_data
             layers = [pred_map.get_map_layer()]
 
-            # Add overlays
+            #overlays
             if show_firehazard:
                 fire_map = FireHazardMap(firehazard_data)
                 layers.append(fire_map.get_map_layer())
@@ -144,7 +142,7 @@ with main_container:
                 elev_map = ElevationMap()
                 layers.append(elev_map.get_map_layer())
 
-            # Render as HTML and embed
+            # HTML
             html_str = pred_map.render_combined_map(layers).to_html(as_string=True)
             
             legend_html = get_legend_html(show_elevation, show_firehazard)
